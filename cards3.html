@@ -1,0 +1,205 @@
+<html>
+  <head>
+    <title>Memory Match</title>
+    <button id="resetBtn" onclick="resetGame()">Reset</button>
+    <style>
+      /* styles for the game board and cards */
+      #board {
+        display: flex;
+        flex-wrap: wrap;
+        width: 800px;
+        height: 800px;
+        margin: 0 auto;
+      }
+      .card {
+        width: 150px;
+        height: 150px;
+        background-color: #93b39e;
+        border: 1px solid #000;
+        text-align: center;
+        line-height: 150px;
+        font-size: 48px;
+        color: #fff;
+        margin: 10px;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-image: none;
+      }
+      .card.flip {
+        background-color: #fff;
+        background-image: url(card.img);
+      }
+      .card.back {
+        background-image: none;
+      }
+      .card.unflip {
+      background-image: none;
+      }
+      #resetBtn {
+      padding: 10px 20px;
+      margin: 20px auto;
+      text-align: center;
+      display: block;
+
+      background-color: #93b39e;
+      color: black;
+      border: none;
+      border-radius: 20px;
+
+      cursor: pointer;
+      transition: background-color 0.3s;
+      }
+
+      #resetBtn:hover {
+      background-color: #ffffff;
+      }
+      #attempts, #score {
+      padding: 10px;
+      margin: 20px 0;
+
+      background-color: #f2f2f2;
+      color: #333;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+
+      font-size: 16px;
+      font-weight: bold;
+      text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="board"></div>
+    <p id="attempts"></p>
+    <p id="score"></p>
+    <script>
+      // array of card objects, with id and img properties
+      const cards = [
+        { id: 1, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number1.png" },
+        { id: 2, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number2.png" },
+        { id: 3, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number3.png" },
+        { id: 4, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number4.png" },
+        { id: 5, img: "number5.png" },
+        { id: 6, img: "number6.jpeg" },
+        { id: 7, img: "number7.png" },
+        { id: 8, img: "number8.png" },
+        { id: 1, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number1.png" },
+        { id: 2, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number2.png" },
+        { id: 3, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number3.png" },
+        { id: 4, img: "https://irp.cdn-website.com/7b508e59/dms3rep/multi/number4.png" },
+        { id: 5, img: "number5.png" },
+        { id: 6, img: "number6.jpeg" },
+        { id: 7, img: "number7.png" },
+        { id: 8, img: "number8.png" },
+      ];
+      
+      let firstCard = null;
+      let secondCard = null;
+      let lockBoard = false;
+      let attempts = 0;
+      let score = 0;
+
+// Fisher-Yates shuffle algorithm
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+// function to create and render cards on the board
+function createCards() {
+  const board = document.getElementById("board");
+  let cardIndex = 0;
+  shuffle(cards);
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      const newCard = document.createElement("div");
+      newCard.classList.add("card");
+      newCard.dataset.card = cards[cardIndex].id;
+      newCard.dataset.img = cards[cardIndex].img;
+      newCard.style.gridRowStart = i + 1;
+      newCard.style.gridColumnStart = j + 1;
+      newCard.addEventListener("click", flipCard);
+      board.appendChild(newCard);
+      cardIndex++;
+    }
+  }
+}
+
+// function to handle card flipping
+function flipCard(event) {
+    if (lockBoard) return;
+    if (event.target.classList.contains("flip")) return;
+
+    event.target.classList.add("flip");
+    event.target.style.backgroundImage = `url(${event.target.dataset.img})`;
+    if (!firstCard) {
+      firstCard = event.target;
+      return;
+    }
+
+    secondCard = event.target;
+    checkForMatch();
+  }
+// function to check if the two flipped cards match
+function checkForMatch() {
+    attempts++;
+    document.getElementById("attempts").innerHTML = `Attempts: ${attempts}`;
+    let isMatch = firstCard.dataset.card === secondCard.dataset.card;
+
+    if (isMatch) {
+      disableCards();
+      score++;
+      document.getElementById("score").innerHTML = `Score: ${score}`;
+    } else {
+      unflipCards();
+    }
+  }
+  
+  // function to disable matching cards
+  function disableCards() {
+    firstCard.removeEventListener("click", flipCard);
+    secondCard.removeEventListener("click", flipCard);
+    resetBoard();
+  }
+  function resetGame() {
+    // reset score and attempts
+    attempts = 0;
+    score = 0;
+    document.getElementById("attempts").innerHTML = `Attempts: ${attempts}`;
+    document.getElementById("score").innerHTML = `Score: ${score}`;
+
+    // remove all the cards from the board
+    const board = document.getElementById("board");
+    while (board.firstChild) {
+        board.removeChild(board.firstChild);
+    }
+
+    // call the createCards function to re-create the cards
+    createCards();
+  }
+  // function to unflip non-matching cards
+  function unflipCards() {
+    lockBoard = true;
+
+    setTimeout(() => {
+      firstCard.classList.remove("flip");
+      secondCard.classList.remove("flip");
+      firstCard.style.backgroundImage = "";
+      secondCard.style.backgroundImage = "";
+      resetBoard();
+    }, 1500);
+  }
+
+function resetBoard() {
+    [firstCard, secondCard, lockBoard] = [null, null, false];
+    if(firstCard) firstCard.classList.remove("unflip");
+    if(secondCard) secondCard.classList.remove("unflip");
+  }
+  
+  createCards();
+</script>
+</body>
+</html>
