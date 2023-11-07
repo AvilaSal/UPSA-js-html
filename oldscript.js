@@ -1,12 +1,10 @@
-       <script>
+
        // reload script for thebutton2
        document.getElementById("Thebutton2").addEventListener("click", function() {
         location.reload();
         window.scrollTo(0, 0);
        });
-       </script>
 
-       <script id="1298619575">
 
         // line below calls the showResults function
         document.getElementById('survey-form').addEventListener('submit', showResults);
@@ -460,4 +458,3 @@
          return "";
          }
          }
-       </script>
